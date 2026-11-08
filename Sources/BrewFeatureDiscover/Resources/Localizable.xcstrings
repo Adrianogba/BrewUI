@@ -288,7 +288,14 @@
       }
     },
     "Cancel" : {
-      "comment" : "Discover list context menu: cancel uninstall"
+      "comment" : "Discover list context menu: cancel uninstall",
+      "localizations" : {
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Cancelar" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "取消" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "取消" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Avbryt" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "취소" } }
+      }
     },
     "Casks" : {
       "comment" : "Discover casks section header while searching\nScope picker: casks only",
@@ -676,7 +683,14 @@
       }
     },
     "Upgrade" : {
-      "comment" : "Discover list context menu: upgrade an outdated package"
+      "comment" : "Discover list context menu: upgrade an outdated package",
+      "localizations" : {
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Actualizar" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "升级" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "升級" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Uppgradera" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "업그레이드" } }
+      }
     },
     "Install reason" : {
       "comment" : "Package detail row: on request or as a dependency",
@@ -1566,13 +1580,34 @@
       }
     },
     "This will remove %@ from this Mac using Homebrew." : {
-      "comment" : "Discover list context menu: uninstall confirmation message; %@ is the package name"
+      "comment" : "Discover list context menu: uninstall confirmation message; %@ is the package name",
+      "localizations" : {
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Esto desinstalará %@ de esta Mac con Homebrew." } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "这将使用 Homebrew 从此 Mac 上移除 %@。" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "這會透過 Homebrew 從這部 Mac 解除安裝 %@。" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Detta tar bort %@ från den här Macen med Homebrew." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Homebrew를 사용해 이 Mac에서 %@ 패키지를 제거합니다." } }
+      }
     },
     "Uninstall" : {
-      "comment" : "Discover list context menu: uninstall an installed package"
+      "comment" : "Discover list context menu: uninstall an installed package",
+      "localizations" : {
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "Desinstalar" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "卸载" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "解除安裝" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Avinstallera" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "제거" } }
+      }
     },
     "Uninstall %@?" : {
-      "comment" : "Discover list context menu: uninstall confirmation title; %@ is the package name"
+      "comment" : "Discover list context menu: uninstall confirmation title; %@ is the package name",
+      "localizations" : {
+        "es" : { "stringUnit" : { "state" : "translated", "value" : "¿Desinstalar %@?" } },
+        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "卸载 %@？" } },
+        "zh-Hant" : { "stringUnit" : { "state" : "translated", "value" : "要解除安裝 %@ 嗎？" } },
+        "sv" : { "stringUnit" : { "state" : "translated", "value" : "Avinstallera %@?" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%@ 패키지를 제거할까요?" } }
+      }
     },
     "Source" : {
       "comment" : "Package detail row: source tap",
