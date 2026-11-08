@@ -12,6 +12,8 @@ struct DiscoverPackagesView: View {
     @FocusState private var focus: SearchFocusTarget?
 
     @Environment(\.packageListBanner) private var packageListBanner
+    @Environment(\.brewCommandCenter) private var brewCommandCenter
+    @Environment(\.mutatingCommandFactory) private var mutatingCommandFactory
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -24,7 +26,14 @@ struct DiscoverPackagesView: View {
                 state: viewModel.activeState,
                 onRetry: { Task { await viewModel.reloadActive() } },
                 loaded: { packages in
-                    DiscoverPackageSections(viewModel: viewModel, packages: packages, focus: $focus)
+                    DiscoverPackageSections(
+                        viewModel: viewModel,
+                        packages: packages,
+                        focus: $focus,
+                        onInstall: { performInstall(for: $0) },
+                        onUpgrade: { performUpgrade(for: $0) },
+                        onRequestUninstall: { performUninstall(for: $0) },
+                    )
                 },
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -86,6 +95,31 @@ struct DiscoverPackagesView: View {
                 return
             }
             await viewModel.search()
+        }
+    }
+
+    private func performInstall(for package: DiscoveryBrewPackage) {
+        viewModel.setSelection(package.id)
+        let command = mutatingCommandFactory.installCommand(kind: package.kind, name: package.name)
+        Task {
+            _ = try? await brewCommandCenter.perform(command, id: BrewOperationID(kind: package.kind, name: package.name))
+        }
+    }
+
+    private func performUpgrade(for package: DiscoveryBrewPackage) {
+        viewModel.setSelection(package.id)
+        let upgradeName = viewModel.upgradeName(for: package)
+        let command = mutatingCommandFactory.upgradeCommand(kind: package.kind, name: upgradeName)
+        Task {
+            _ = try? await brewCommandCenter.perform(command, id: BrewOperationID(kind: package.kind, name: package.name))
+        }
+    }
+
+    private func performUninstall(for package: DiscoveryBrewPackage) {
+        viewModel.setSelection(package.id)
+        let command = mutatingCommandFactory.uninstallCommand(kind: package.kind, name: package.name)
+        Task {
+            _ = try? await brewCommandCenter.perform(command, id: BrewOperationID(kind: package.kind, name: package.name))
         }
     }
 
@@ -168,6 +202,9 @@ private struct DiscoverPackageSections: View {
     /// The redacted-placeholder or loaded packages handed down by `AsyncContentView` for this render.
     let packages: [DiscoveryBrewPackage]
     @FocusState.Binding var focus: SearchFocusTarget?
+    let onInstall: (DiscoveryBrewPackage) -> Void
+    let onUpgrade: (DiscoveryBrewPackage) -> Void
+    let onRequestUninstall: (DiscoveryBrewPackage) -> Void
 
     private var formulae: [DiscoveryBrewPackage] {
         viewModel.showsFormulaeSection ? DiscoverViewModel.section(packages, kind: .formula) : []
@@ -250,6 +287,9 @@ private struct DiscoverPackageSections: View {
         DiscoverListRowRoot(
             discoveryPackage: package,
             showsInstallMetrics: viewModel.showsInstallMetrics,
+            onInstall: { onInstall(package) },
+            onUpgrade: { onUpgrade(package) },
+            onRequestUninstall: { onRequestUninstall(package) },
         )
     }
 

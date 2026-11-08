@@ -287,6 +287,9 @@
         }
       }
     },
+    "Cancel" : {
+      "comment" : "Discover list context menu: cancel uninstall"
+    },
     "Casks" : {
       "comment" : "Discover casks section header while searching\nScope picker: casks only",
       "localizations" : {
@@ -671,6 +674,9 @@
           }
         }
       }
+    },
+    "Upgrade" : {
+      "comment" : "Discover list context menu: upgrade an outdated package"
     },
     "Install reason" : {
       "comment" : "Package detail row: on request or as a dependency",
@@ -1558,6 +1564,15 @@
           }
         }
       }
+    },
+    "This will remove %@ from this Mac using Homebrew." : {
+      "comment" : "Discover list context menu: uninstall confirmation message; %@ is the package name"
+    },
+    "Uninstall" : {
+      "comment" : "Discover list context menu: uninstall an installed package"
+    },
+    "Uninstall %@?" : {
+      "comment" : "Discover list context menu: uninstall confirmation title; %@ is the package name"
     },
     "Source" : {
       "comment" : "Package detail row: source tap",

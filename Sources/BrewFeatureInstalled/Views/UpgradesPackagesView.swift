@@ -16,6 +16,8 @@ struct UpgradesPackagesView: View {
     @FocusState.Binding var focus: SearchFocusTarget?
 
     @Environment(\.packageListBanner) private var packageListBanner
+    @Environment(\.brewCommandCenter) private var brewCommandCenter
+    @Environment(\.mutatingCommandFactory) private var mutatingCommandFactory
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -102,7 +104,11 @@ struct UpgradesPackagesView: View {
     }
 
     private func row(for package: InstalledBrewPackage) -> some View {
-        InstalledListRowRoot(package: package)
+        InstalledListRowRoot(
+            package: package,
+            onUpgrade: { performUpgrade(for: package) },
+            onRequestUninstall: { performUninstall(for: package) },
+        )
             .id(package.id)
             .contentShape(Rectangle())
             .listRowBackground(
@@ -120,6 +126,22 @@ struct UpgradesPackagesView: View {
                 viewModel.setSelection(package.id)
             }
             .axid(.upgradesRow(token: package.name))
+    }
+
+    private func performUpgrade(for package: InstalledBrewPackage) {
+        viewModel.setSelection(package.id)
+        let command = mutatingCommandFactory.upgradeCommand(kind: package.kind, name: package.upgradeName)
+        Task {
+            _ = try? await brewCommandCenter.perform(command, id: BrewOperationID(package: package))
+        }
+    }
+
+    private func performUninstall(for package: InstalledBrewPackage) {
+        viewModel.setSelection(package.id)
+        let command = mutatingCommandFactory.uninstallCommand(kind: package.kind, name: package.name)
+        Task {
+            _ = try? await brewCommandCenter.perform(command, id: BrewOperationID(package: package))
+        }
     }
 
     private func scrollToSelection(

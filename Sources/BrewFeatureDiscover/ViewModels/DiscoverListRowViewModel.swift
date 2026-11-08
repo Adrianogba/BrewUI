@@ -86,9 +86,25 @@ final class DiscoverListRowViewModel: Identifiable {
         return String(localized: "Installed", bundle: #bundle, comment: "Discover list row installed status")
     }
 
+    var isInstalled: Bool {
+        installedRepository.isInstalled(id)
+    }
+
+    var isInstalledVersionOutdated: Bool {
+        installedPackage?.outdated ?? false
+    }
+
+    var canOfferPackageActions: Bool {
+        discoveryPackage.id != SelfUpgradeIdentity.packageID
+    }
+
     /// True while an install is in flight, including the reconcile that lands the badge.
     var showsInstallBusy: Bool {
         DiscoverInstallBusyPresentation.showsInstallBusy(phase: operationPhase)
+    }
+
+    var showsPackageMutationBusy: Bool {
+        operationPhase.activeKind?.isMutating == true
     }
 
     var rowAccessibilityLabel: String {

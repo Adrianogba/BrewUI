@@ -9,6 +9,9 @@ import SwiftUI
 struct DiscoverListRowRoot: View {
     let discoveryPackage: DiscoveryBrewPackage
     let showsInstallMetrics: Bool
+    let onInstall: () -> Void
+    let onUpgrade: () -> Void
+    let onRequestUninstall: () -> Void
     @Environment(\.installedPackagesRepository) private var installedPackagesRepository
     @Environment(\.brewCommandCenter) private var brewCommandCenter
 
@@ -18,6 +21,9 @@ struct DiscoverListRowRoot: View {
             installedRepository: installedPackagesRepository,
             brewCommandCenter: brewCommandCenter,
             showsInstallMetrics: showsInstallMetrics,
+            onInstall: onInstall,
+            onUpgrade: onUpgrade,
+            onRequestUninstall: onRequestUninstall,
         )
         .id(discoveryPackage.id)
     }
@@ -25,13 +31,20 @@ struct DiscoverListRowRoot: View {
 
 struct DiscoverListRowView: View {
     let discoveryPackage: DiscoveryBrewPackage
+    let onInstall: () -> Void
+    let onUpgrade: () -> Void
+    let onRequestUninstall: () -> Void
     @State private var viewModel: DiscoverListRowViewModel
+    @State private var showsUninstallConfirmation = false
 
     init(
         discoveryPackage: DiscoveryBrewPackage,
         installedRepository: any InstalledPackageStatusReading,
         brewCommandCenter: any BrewCommandCenter,
         showsInstallMetrics: Bool = true,
+        onInstall: @escaping () -> Void = {},
+        onUpgrade: @escaping () -> Void = {},
+        onRequestUninstall: @escaping () -> Void = {},
     ) {
         self.discoveryPackage = discoveryPackage
         _viewModel = State(
@@ -42,6 +55,9 @@ struct DiscoverListRowView: View {
                 showsInstallMetrics: showsInstallMetrics,
             ),
         )
+        self.onInstall = onInstall
+        self.onUpgrade = onUpgrade
+        self.onRequestUninstall = onRequestUninstall
     }
 
     var body: some View {
@@ -65,6 +81,43 @@ struct DiscoverListRowView: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(viewModel.rowAccessibilityLabel)
+        .contextMenu {
+            if viewModel.canOfferPackageActions {
+                if !viewModel.isInstalled {
+                    Button(String(localized: "Install", bundle: #bundle, comment: "Discover list context menu: install a package")) {
+                        onInstall()
+                    }
+                    .disabled(viewModel.showsPackageMutationBusy)
+                } else {
+                    if viewModel.isInstalledVersionOutdated {
+                        Button(String(localized: "Upgrade", bundle: #bundle, comment: "Discover list context menu: upgrade an outdated package")) {
+                            onUpgrade()
+                        }
+                        .disabled(viewModel.showsPackageMutationBusy)
+                    }
+                    Button(String(localized: "Uninstall", bundle: #bundle, comment: "Discover list context menu: uninstall an installed package"), role: .destructive) {
+                        showsUninstallConfirmation = true
+                    }
+                    .disabled(viewModel.showsPackageMutationBusy)
+                }
+            }
+        }
+        .confirmationDialog(
+            String(localized: "Uninstall \(discoveryPackage.name)?", bundle: #bundle, comment: "Discover list context menu: uninstall confirmation title; interpolated package name"),
+            isPresented: $showsUninstallConfirmation,
+            presenting: discoveryPackage,
+        ) { _ in
+            Button(String(localized: "Uninstall", bundle: #bundle, comment: "Discover list context menu: confirm uninstall"), role: .destructive) {
+                onRequestUninstall()
+            }
+            Button(String(localized: "Cancel", bundle: #bundle, comment: "Discover list context menu: cancel uninstall"), role: .cancel) {}
+        } message: { package in
+            Text(verbatim: String(
+                localized: "This will remove \(package.name) from this Mac using Homebrew.",
+                bundle: #bundle,
+                comment: "Discover list context menu: uninstall confirmation message; interpolated package name",
+            ))
+        }
     }
 
     private var titleRow: some View {
@@ -74,7 +127,7 @@ struct DiscoverListRowView: View {
                 .foregroundStyle(Color.brewTextPrimary)
                 .lineLimit(1)
 
-            if viewModel.showsInstallBusy {
+            if viewModel.showsPackageMutationBusy {
                 ProgressView()
                     .controlSize(.small)
                     .accessibilityHidden(true)

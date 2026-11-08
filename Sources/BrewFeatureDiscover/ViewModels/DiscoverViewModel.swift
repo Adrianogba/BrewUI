@@ -195,6 +195,10 @@ final class DiscoverViewModel {
         return package
     }
 
+    func upgradeName(for package: DiscoveryBrewPackage) -> String {
+        installedRepository.info(for: package.id)?.upgradeName ?? package.name
+    }
+
     // MARK: - Helpers
 
     static func section(

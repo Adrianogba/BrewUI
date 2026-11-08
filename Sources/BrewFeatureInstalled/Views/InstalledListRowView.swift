@@ -12,12 +12,16 @@ import SwiftUI
 /// Owns ``InstalledListRowViewModel`` for one row and runs ``InstalledListRowViewModel/observeRowUpdates()`` while the row is on screen.
 struct InstalledListRowRoot: View {
     let package: InstalledBrewPackage
+    let onUpgrade: () -> Void
+    let onRequestUninstall: () -> Void
     @Environment(\.brewCommandCenter) private var brewCommandCenter
 
     var body: some View {
         InstalledListRowView(
             package: package,
             brewCommandCenter: brewCommandCenter,
+            onUpgrade: onUpgrade,
+            onRequestUninstall: onRequestUninstall,
         )
         .id(package.id)
     }
@@ -25,9 +29,17 @@ struct InstalledListRowRoot: View {
 
 struct InstalledListRowView: View {
     let package: InstalledBrewPackage
+    let onUpgrade: () -> Void
+    let onRequestUninstall: () -> Void
     @State private var viewModel: InstalledListRowViewModel
+    @State private var showsUninstallConfirmation = false
 
-    init(package: InstalledBrewPackage, brewCommandCenter: BrewCommandCenter) {
+    init(
+        package: InstalledBrewPackage,
+        brewCommandCenter: any BrewCommandCenter,
+        onUpgrade: @escaping () -> Void = {},
+        onRequestUninstall: @escaping () -> Void = {},
+    ) {
         _viewModel = State(
             initialValue: InstalledListRowViewModel(
                 package: package,
@@ -35,6 +47,8 @@ struct InstalledListRowView: View {
             ),
         )
         self.package = package
+        self.onUpgrade = onUpgrade
+        self.onRequestUninstall = onRequestUninstall
     }
 
     var body: some View {
@@ -46,6 +60,34 @@ struct InstalledListRowView: View {
         }
         .onChange(of: package) { _, new in
             viewModel.update(package: new)
+        }
+        .contextMenu {
+            if package.outdated {
+                Button(String(localized: "Upgrade", bundle: #bundle, comment: "Package list context menu: upgrade an outdated package")) {
+                    onUpgrade()
+                }
+                .disabled(viewModel.showsOperationBusy)
+            }
+            Button(String(localized: "Uninstall", bundle: #bundle, comment: "Package list context menu: uninstall an installed package"), role: .destructive) {
+                showsUninstallConfirmation = true
+            }
+            .disabled(viewModel.showsOperationBusy)
+        }
+        .confirmationDialog(
+            String(localized: "Uninstall \(package.name)?", bundle: #bundle, comment: "Package list context menu: uninstall confirmation title; interpolated package name"),
+            isPresented: $showsUninstallConfirmation,
+            presenting: package,
+        ) { package in
+            Button(String(localized: "Uninstall", bundle: #bundle, comment: "Package list context menu: confirm uninstall"), role: .destructive) {
+                onRequestUninstall()
+            }
+            Button(String(localized: "Cancel", bundle: #bundle, comment: "Package list context menu: cancel uninstall"), role: .cancel) {}
+        } message: { package in
+            Text(verbatim: String(
+                localized: "This will remove \(package.name) from this Mac using Homebrew.",
+                bundle: #bundle,
+                comment: "Package list context menu: uninstall confirmation message; interpolated package name",
+            ))
         }
     }
 
